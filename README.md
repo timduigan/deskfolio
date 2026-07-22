@@ -35,6 +35,31 @@ Each refresh appends a dated snapshot to `history.json`. That history is what po
 the chart and the daily P/L, so both **fill in over the days you run it** (or instantly
 if you import a CSV export that contains dated values).
 
+## Live auto-updating prices (optional)
+
+Instead of a fixed value, you can have the widget **track the market** — reprice your
+holdings from live data on a schedule.
+
+1. List your **share quantities** and crypto units in `holdings.live.json`
+   (copy `holdings.live.example.json`).
+2. Get a free **Finnhub** API key at <https://finnhub.io/register> and put it in `.env`:
+   ```
+   FINNHUB_API_KEY=your_key_here
+   ```
+3. Run it:
+   ```bash
+   python3 scripts/live-update.py --dry-run   # prints the math, writes nothing
+   python3 scripts/live-update.py             # writes value.json
+   ```
+4. Schedule it (macOS) to refresh every 15 minutes:
+   ```bash
+   ./scripts/schedule-macos.sh                # stop: launchctl unload ~/Library/LaunchAgents/com.deskfolio.update.plist
+   ```
+
+Data sources: **Finnhub** (US stock/ETF quotes), **CoinGecko** (crypto, keyless),
+**open.er-api.com** (USD→ZAR, keyless). Tip: cross-check the computed total against
+what your broker shows once — if they line up, your tickers and share counts are right.
+
 ## Install
 
 ```bash

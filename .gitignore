@@ -10,3 +10,6 @@ config.local.json
 __pycache__/
 *.pyc
 .gstack/
+holdings.live.json
+.env
+.update.log

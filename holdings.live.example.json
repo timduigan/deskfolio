@@ -1,0 +1,21 @@
+{
+  "currency_symbol": "R",
+  "stocks": [
+    {
+      "id": "usd",
+      "label": "USD account",
+      "holdings": [
+        { "ticker": "VOO",  "shares": 0.0174 },
+        { "ticker": "VDE",  "shares": 0.0700 },
+        { "ticker": "MRVL", "shares": 0.0282 },
+        { "ticker": "SPCX", "shares": 0.1230 }
+      ]
+    }
+  ],
+  "crypto": [
+    { "id": "crypto", "label": "Crypto", "coin": "bitcoin", "units": 0.00009198 }
+  ],
+  "manual": [
+    { "id": "jse", "label": "ZAR / JSE", "value": 0 }
+  ]
+}
