@@ -1,0 +1,9 @@
+{
+  "currency": "ZAR",
+  "accounts": [
+    { "id": "usd",    "label": "USD account", "value": 9980 },
+    { "id": "crypto", "label": "Crypto",      "value": 3120 },
+    { "id": "jse",    "label": "ZAR / JSE",   "value": 2500 },
+    { "id": "tfsa",   "label": "TFSA",        "value": 1400 }
+  ]
+}

@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EasyEquities</title>
+<style>
+  :root{
+    --bg:#ffffff; --border:#e7e7e4; --text:#161615; --muted:#77776f;
+    --faint:#a2a29b; --divider:#efefec; --toggle:#f1efe8;
+    --up-bg:#e1f5ee; --up-fg:#0f6e56; --down-bg:#fdecec; --down-fg:#b3261e;
+  }
+  @media (prefers-color-scheme: dark){ :root{ --dark:1 } }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#161618; --border:#2b2b2e; --text:#f2f2f0; --muted:#9a9aa0;
+      --faint:#7c7c82; --divider:#2b2b2e; --toggle:#2b2b2e;
+      --up-bg:rgba(45,201,150,.15); --up-fg:#3ddc9a;
+      --down-bg:rgba(229,72,77,.15); --down-fg:#ff6b6b;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#161618; --border:#2b2b2e; --text:#f2f2f0; --muted:#9a9aa0;
+    --faint:#7c7c82; --divider:#2b2b2e; --toggle:#2b2b2e;
+    --up-bg:rgba(45,201,150,.15); --up-fg:#3ddc9a;
+    --down-bg:rgba(229,72,77,.15); --down-fg:#ff6b6b;
+  }
+  :root[data-theme="light"]{
+    --bg:#ffffff; --border:#e7e7e4; --text:#161615; --muted:#77776f;
+    --faint:#a2a29b; --divider:#efefec; --toggle:#f1efe8;
+    --up-bg:#e1f5ee; --up-fg:#0f6e56; --down-bg:#fdecec; --down-fg:#b3261e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:transparent}
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",Segoe UI,sans-serif;
+    display:flex;align-items:center;justify-content:center;padding:14px}
+  .card{position:relative;width:360px;border-radius:18px;padding:20px;background:var(--bg);
+    border:1px solid var(--border);color:var(--text);box-shadow:0 10px 30px rgba(0,0,0,.12);overflow:hidden}
+  .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .head b{font-weight:500;font-size:15px}
+  .gear{background:none;border:0;color:var(--faint);cursor:pointer;font-size:16px;padding:2px;line-height:1;border-radius:6px}
+  .gear:hover{color:var(--text);background:var(--toggle)}
+  .valrow{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap}
+  .total{font-size:33px;font-weight:500;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+  .total .cur{font-size:18px;color:var(--faint);margin-right:2px}
+  .pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;padding:4px 9px;border-radius:20px}
+  .pill.up{background:var(--up-bg);color:var(--up-fg)}
+  .pill.down{background:var(--down-bg);color:var(--down-fg)}
+  .pill.flat{background:var(--toggle);color:var(--muted)}
+  .arrow{font-size:11px;line-height:1}
+  svg.chart{display:block;width:100%;height:88px;margin:14px 0 4px}
+  .collecting{font-size:11px;color:var(--faint);text-align:center;margin:6px 0}
+  .rows{border-top:1px solid var(--divider);padding-top:12px;margin-top:12px;display:flex;flex-direction:column;gap:7px}
+  .row{display:flex;justify-content:space-between;font-size:13px}
+  .row .k{color:var(--muted)} .row .v{font-variant-numeric:tabular-nums}
+  .src{margin-top:12px;font-size:10px;color:var(--faint)}
+  /* settings panel */
+  .panel{position:absolute;inset:0;background:var(--bg);padding:20px;display:none;flex-direction:column;gap:16px}
+  .panel.open{display:flex}
+  .panel h3{font-size:14px;font-weight:500;display:flex;justify-content:space-between;align-items:center}
+  .panel .close{background:none;border:0;color:var(--faint);cursor:pointer;font-size:16px}
+  .field label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+  .seg{display:flex;gap:4px}
+  .seg button{flex:1;font:inherit;font-size:12px;color:var(--muted);background:var(--toggle);border:0;padding:7px 0;border-radius:8px;cursor:pointer}
+  .seg button.on{color:var(--text);font-weight:500;box-shadow:inset 0 0 0 1.5px var(--text)}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="head"><b>EasyEquities</b>
+      <button class="gear" id="gear" title="Settings" aria-label="Settings">&#9881;</button></div>
+    <div class="valrow">
+      <div class="total" id="total"><span class="cur">R</span>—</div>
+      <span class="pill flat" id="pill">—</span>
+    </div>
+    <svg class="chart" id="chart" viewBox="0 0 340 90" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="up" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#16a06f" stop-opacity=".22"/><stop offset="1" stop-color="#16a06f" stop-opacity="0"/></linearGradient>
+        <linearGradient id="down" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#e5484d" stop-opacity=".22"/><stop offset="1" stop-color="#e5484d" stop-opacity="0"/></linearGradient>
+      </defs>
+      <path id="area" fill="url(#up)"/>
+      <path id="line" fill="none" stroke="#16a06f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="collecting" id="collecting" style="display:none"></div>
+    <div class="rows" id="rows"></div>
+    <div class="src" id="src"></div>
+
+    <div class="panel" id="panel">
+      <h3>Settings<button class="close" id="close" aria-label="Close">&times;</button></h3>
+      <div class="field"><label>Chart range</label>
+        <div class="seg" id="seg-range">
+          <button data-v="lifetime">Lifetime</button><button data-v="1Y">1Y</button>
+          <button data-v="1M">1M</button><button data-v="1W">1W</button></div></div>
+      <div class="field"><label>Theme</label>
+        <div class="seg" id="seg-theme">
+          <button data-v="auto">Auto</button><button data-v="light">Light</button><button data-v="dark">Dark</button></div></div>
+      <div class="field"><label>Accounts shown</label>
+        <div class="seg" id="seg-accounts">
+          <button data-v="1">1</button><button data-v="2">2</button>
+          <button data-v="3">3</button><button data-v="99">All</button></div></div>
+    </div>
+  </div>
+
+<script>
+  const DEFAULTS = {currency_symbol:"R", chart_range:"lifetime", accounts_shown:2, theme:"auto"};
+  let CFG = {...DEFAULTS}, DATA = null;
+  const fmt = (n,sym) => (sym||CFG.currency_symbol||"R") + Number(n||0).toLocaleString('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+  function loadSettings(fileCfg){
+    let ls = {}; try{ ls = JSON.parse(localStorage.getItem('ee-settings')||'{}'); }catch(e){}
+    CFG = {...DEFAULTS, ...(fileCfg||{}), ...ls};
+    applyTheme();
+  }
+  function saveSettings(patch){
+    let ls = {}; try{ ls = JSON.parse(localStorage.getItem('ee-settings')||'{}'); }catch(e){}
+    ls = {...ls, ...patch}; localStorage.setItem('ee-settings', JSON.stringify(ls));
+    CFG = {...CFG, ...patch}; applyTheme();
+  }
+  function applyTheme(){
+    const t = CFG.theme;
+    if(t==='light'||t==='dark') document.documentElement.setAttribute('data-theme', t);
+    else document.documentElement.removeAttribute('data-theme');
+  }
+
+  function inRange(series, range){
+    if(range==="lifetime" || !series || series.length<2) return series||[];
+    const days = {"1Y":366,"1M":31,"1W":7}[range] || 1e9;
+    const last = new Date(series[series.length-1].date);
+    const cut = new Date(last); cut.setDate(cut.getDate()-days);
+    const f = series.filter(p => new Date(p.date) >= cut);
+    return f.length>=2 ? f : series.slice(-2);
+  }
+
+  function drawChart(points){
+    const W=340,H=90,pad=8;
+    const area=document.getElementById('area'), line=document.getElementById('line');
+    if(!points || points.length===0){ area.setAttribute('d',''); line.setAttribute('d',''); return; }
+    const vals=points.map(p=>p.value); let mn=Math.min(...vals), mx=Math.max(...vals);
+    if(mn===mx){ mn-=1; mx+=1; }
+    const y=v=> pad + (H-2*pad)*(1-(v-mn)/(mx-mn));
+    const x=i=> points.length<2 ? W/2 : i/(points.length-1)*W;
+    let d = points.length<2 ? `M0,${y(points[0].value).toFixed(1)} L${W},${y(points[0].value).toFixed(1)}`
+      : points.map((p,i)=> (i?'L':'M')+x(i).toFixed(1)+','+y(p.value).toFixed(1)).join(' ');
+    line.setAttribute('d', d); area.setAttribute('d', d + ` L${W},${H} L0,${H} Z`);
+    const up = points.length<2 || points[points.length-1].value >= points[0].value;
+    line.setAttribute('stroke', up ? '#16a06f' : '#e5484d');
+    area.setAttribute('fill', up ? 'url(#up)' : 'url(#down)');
+    const sparse=(DATA.series||[]).length<2;
+    const note=document.getElementById('collecting');
+    note.style.display = sparse ? 'block' : 'none';
+    note.textContent = sparse ? 'collecting history — chart fills in daily' : '';
+  }
+
+  function renderPill(){
+    const pill=document.getElementById('pill');
+    const dz=DATA.day_change, dp=DATA.day_change_pct, sym=DATA.currency_symbol;
+    if(dz===null||dz===undefined){ pill.className='pill flat'; pill.textContent='— today'; return; }
+    const up=dz>=0; pill.className='pill '+(dz===0?'flat':(up?'up':'down'));
+    const sign=up?'+':'−';
+    const amt=Number(Math.abs(dz)).toLocaleString('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2});
+    pill.innerHTML=`<span class="arrow">${up?'▲':'▼'}</span>${sign}${sym}${amt}`+
+      (dp!==null?` · ${sign}${Math.abs(dp).toFixed(2)}%`:'')+' today';
+  }
+
+  function render(){
+    const sym=DATA.currency_symbol||CFG.currency_symbol;
+    document.getElementById('total').innerHTML=`<span class="cur">${sym}</span>`+
+      Number(DATA.total||0).toLocaleString('en-ZA',{minimumFractionDigits:2,maximumFractionDigits:2});
+    renderPill();
+    drawChart(inRange(DATA.series||[], CFG.chart_range));
+    const rows=document.getElementById('rows'); rows.innerHTML='';
+    const sorted=[...(DATA.accounts||[])].sort((a,b)=>(b.value||0)-(a.value||0));
+    const n = CFG.accounts_shown>=99 ? sorted.length : CFG.accounts_shown;
+    sorted.slice(0,n).forEach(a=>{
+      const el=document.createElement('div'); el.className='row';
+      el.innerHTML=`<span class="k">${a.label}</span><span class="v">${fmt(a.value,sym)}</span>`;
+      rows.appendChild(el);
+    });
+    document.getElementById('src').textContent='source: '+(DATA.source||'—')+'  ·  as of '+(DATA.as_of||'—');
+    syncSegs();
+  }
+
+  function syncSegs(){
+    const map={'seg-range':String(CFG.chart_range),'seg-theme':String(CFG.theme),'seg-accounts':String(CFG.accounts_shown)};
+    Object.entries(map).forEach(([id,val])=>{
+      document.querySelectorAll('#'+id+' button').forEach(b=>b.classList.toggle('on', b.dataset.v===val));
+    });
+  }
+
+  document.getElementById('gear').onclick=()=>document.getElementById('panel').classList.add('open');
+  document.getElementById('close').onclick=()=>document.getElementById('panel').classList.remove('open');
+  document.getElementById('seg-range').onclick=e=>{const b=e.target.closest('button'); if(b){saveSettings({chart_range:b.dataset.v}); render();}};
+  document.getElementById('seg-theme').onclick=e=>{const b=e.target.closest('button'); if(b){saveSettings({theme:b.dataset.v}); render();}};
+  document.getElementById('seg-accounts').onclick=e=>{const b=e.target.closest('button'); if(b){saveSettings({accounts_shown:Number(b.dataset.v)}); render();}};
+
+  async function fetchJSON(paths){
+    for(const p of paths){ try{ const r=await fetch(p+'?_='+Date.now()); if(r.ok) return await r.json(); }catch(e){} }
+    return null;
+  }
+  async function load(){
+    const cfg = await fetchJSON(['config.json']); loadSettings(cfg||{});
+    DATA = await fetchJSON(['value.json','value.example.json']) || {total:0,series:[],accounts:[],source:'no data',currency_symbol:'R'};
+    render();
+  }
+  load(); setInterval(load, 60000);
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Personal data — never commit real balances
+value.json
+history.json
+holdings.json
+config.local.json
+
+# OS / editor
+.DS_Store
+*.swp
+__pycache__/
+*.pyc
+.gstack/
