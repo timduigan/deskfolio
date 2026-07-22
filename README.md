@@ -38,7 +38,7 @@ if you import a CSV export that contains dated values).
 ## Install
 
 ```bash
-git clone https://github.com/USERNAME/deskfolio.git
+git clone https://github.com/timduigan/deskfolio.git
 cd deskfolio
 
 # 1. Install Übersicht (the desktop-widget host)
